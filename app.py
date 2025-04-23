@@ -8,7 +8,6 @@ import datetime
 
 import os
 if not os.path.exists("./artifacts/model_cancel.pkl") or not os.path.exists("./artifacts/model_adr.pkl"):
-    os.makedirs("artifacts", exist_ok=True)
     from train_models import train_and_save_models
     train_and_save_models()
 
