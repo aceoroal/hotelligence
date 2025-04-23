@@ -76,6 +76,7 @@ def train_and_save_models():
     # Reordering Columns
     adr_feature_order = X_adr.columns.tolist()
     joblib.dump(adr_feature_order, "./artifacts/adr_features.pkl")
+    print("<=====##### DONE saving adr_features #####=====>")
 
 
 
