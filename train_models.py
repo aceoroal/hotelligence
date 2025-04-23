@@ -1,10 +1,11 @@
 import prepare_data as prepare
 import preprocess_data as preprocess
 import joblib
-import pandas as pd
 import numpy as np
 from sklearn.metrics import (accuracy_score, mean_absolute_error, r2_score)
 from xgboost import XGBRegressor
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder
 
 ############################################ Cancellation Prediction Model ############################################
 def train_and_save_models():
@@ -76,41 +77,22 @@ def train_and_save_models():
     # Reordering Columns
     adr_feature_order = X_adr.columns.tolist()
     joblib.dump(adr_feature_order, "./artifacts/adr_features.pkl")
-    print("<=====##### DONE saving adr_features #####=====>")
 
 
 
 
-    # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    # Creating a test csv file
-    X_test_full = preprocess.X_test_cancel.copy()
-    X_test_full['is_canceled'] = preprocess.y_test_cancel
-    X_test_full.to_csv("./data/test.csv", index=False)
+    y_adr = np.log1p(adr_df['adr'])  # log-transformed target
 
-    # Exporting Feature Importance
-    feature_names = preprocess.X_train_adr.columns
-    importances = reg_model.feature_importances_
-    feat_df = pd.DataFrame({
-        'Feature': feature_names,
-        'Importance': importances
-    }).sort_values(by='Importance', ascending=False)
-    feat_df.to_csv("./artifacts/feature_importance.csv", index=False)
+    # Label encode categorical columns
+    label_encoders = {}
+    for col in X_adr.select_dtypes(include='object').columns:
+        le = LabelEncoder()
+        X_adr[col] = le.fit_transform(X_adr[col])
+        label_encoders[col] = le
 
-    # Saving Predictions
-    cancel_preds = preprocess.clf_pipeline.predict_proba(preprocess.X_test_cancel)[:, 1]
-    adr_preds = np.expm1(reg_model.predict(preprocess.X_test_adr))  # reverse log1p
-    y_true_adr = np.expm1(preprocess.y_test_adr)
+    # Split the data
+    train_test_adr = train_test_split(X_adr, y_adr, test_size=0.2, random_state=42)
+    X_train_adr, X_test_adr, y_train_adr, y_test_adr = train_test_adr
 
-    # Saving ADR predictions
-    adr_df = pd.DataFrame({
-        "actual_adr": y_true_adr,
-        "predicted_adr": adr_preds
-    })
-    adr_df.to_csv("./artifacts/adr_predictions.csv", index=False)
-
-    # Saving Cancellation predictions
-    cancel_df = pd.DataFrame({
-        "predicted_cancellation": cancel_preds,
-        "actual_cancellation": y_test_cancel.reset_index(drop=True)
-    })
-    cancel_df.to_csv("./artifacts/cancellation_predictions.csv", index=False)
+    # Save encoders for use in the Dash App (web_app.py)
+    joblib.dump(label_encoders, "./artifacts/encoders.pkl")
