@@ -6,7 +6,10 @@ import joblib
 import datetime
 
 
-
+import os
+if not os.path.exists("./artifacts/model_cancel.pkl"):
+    from train_models import train_and_save_models
+    train_and_save_models()
 
 
 # loading models
@@ -313,4 +316,4 @@ def predict(n_clicks, hotel, room_type, checkin_date, checkout_date, adults, chi
 
 
 if __name__ == "__main__":
-    app.run_server(host='0.0.0.0', debug=True)
+    app.run_server(debug=True)
