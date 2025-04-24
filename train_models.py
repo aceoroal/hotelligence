@@ -21,4 +21,4 @@ def train_and_save_models():
     print(f"Cancellation Model Accuracy: {acc * 100:.2f}%")
 
     # Save cancellation model
-    joblib.dump(preprocess.clf_pipeline, "./artifacts/model_cancel.pkl")
+    joblib.dump(preprocess.clf_pipeline, "./artifacts/model_cancel.pkl", compress=3)
