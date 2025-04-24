@@ -5,13 +5,6 @@ import numpy as np
 import joblib
 import datetime
 
-
-import os
-if not os.path.exists("./artifacts/model_cancel.pkl"):
-    from train_models import train_and_save_models
-    train_and_save_models()
-
-
 # loading models
 model_cancel = joblib.load("./artifacts/model_cancel.pkl")
 model_adr = joblib.load("./artifacts/model_adr.pkl")
